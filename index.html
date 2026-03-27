@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор семейного бюджета</title>
+
+  <link rel="stylesheet" href="styles.css" />
+
+</head>
+<body>
+  <div class="app">
+    <div class="shell">
+      <div class="header">
+        <div class="header-top">
+          <div class="header-brand">
+            <h1>Калькулятор семейного бюджета</h1>
+            <div class="header-subtitle">📊 Доходы, расходы, цели и история семьи в одном окне</div>
+            <p class="hidden">
+              Полная HTML-версия без библиотек: вкладки, ежедневные расходы, ручная история по месяцам,
+              линейные графики на Canvas, цели, резервный фонд, план/факт, импорт/экспорт JSON,
+              localStorage, PDF и расширенная аналитика.
+            </p>
+          </div>
+
+          <div class="toolbar toolbar-bank">
+            <div class="profile-stack">
+              <button class="btn-ghost auth-button profile-button" type="button" id="authButton" data-call="onAuthButtonClick()">👤 Войти</button>
+              <label class="theme-toggle theme-toggle-compact" aria-label="Переключение темы">
+                <input type="checkbox" id="themeSwitch" />
+                <span class="theme-toggle-icons">🌞 <span class="theme-divider">/</span> 🌙</span>
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              </label>
+            </div>
+
+            <div class="autosave-indicator sr-only" id="autosaveStatus" aria-live="polite">Сохранение будет доступно после входа</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="onboarding hidden" id="onboardingBox">
+          <strong>Быстрый старт:</strong> 1) Войдите в аккаунт, 2) Добавьте доходы/расходы, 3) Проверьте календарь и графики.
+          <div class="actions" style="margin-top:10px;">
+            <button class="btn-light" type="button" data-call="dismissOnboarding()">Понятно</button>
+          </div>
+        </div>
+
+        <!-- =====================================================
+             ВКЛАДКИ
+             ===================================================== -->
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="overview">Обзор</button>
+          <button class="tab-btn" data-tab="expenses">Расходы</button>
+          <button class="tab-btn" data-tab="incomes">Доходы</button>
+          <button class="tab-btn" data-tab="automation">Автоплатежи и автопоступления</button>
+          <button class="tab-btn" data-tab="history">История по месяцам</button>
+          <button class="tab-btn" data-tab="goals">Цели и резерв</button>
+          <button class="tab-btn" data-tab="charts">Графики</button>
+          <button class="tab-btn" data-tab="settings">Управление данными</button>
+        </div>
+
+        <!-- =====================================================
+             ВКЛАДКА 1: ОБЗОР
+             ===================================================== -->
+        <div class="tab-panel active" id="tab-overview">
+          <div class="card">
+            <div class="badge">Обзор месяца</div>
+            <h2>Итоги за выбранный месяц</h2>
+
+            <div class="overview-input-grid">
+              <div class="field">
+                <label for="selectedMonth">Месяц учета</label>
+                <input type="month" id="selectedMonth" />
+              </div>
+
+              <div class="field">
+                <label for="familyMembers">Количество членов семьи</label>
+                <input type="number" id="familyMembers" min="1" placeholder="Например: 3" />
+              </div>
+
+              <div class="field">
+                <label for="defaultIncomePlan">Плановый доход по умолчанию (₽)</label>
+                <input type="number" id="defaultIncomePlan" min="0" placeholder="Например: 150000" />
+              </div>
+
+              <div class="field">
+                <label for="defaultExpensePlan">Плановые расходы по умолчанию (₽)</label>
+                <input type="number" id="defaultExpensePlan" min="0" placeholder="Например: 90000" />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn-primary" type="button" data-call="calculateAll()">Пересчитать</button>
+              <button class="btn-success" type="button" data-call="saveData()">Сохранить</button>
+            </div>
+
+            <div class="footer-note">Обзор считает общие итоги по данным вкладок «Доходы» и «Расходы»: регулярные суммы + операции по датам за выбранный месяц.</div>
+
+            <div class="summary-grid">
+              <div class="summary-item">
+                <div class="summary-title">Общий доход за месяц</div>
+                <div class="summary-value" id="totalIncomeResult">0 ₽</div>
+              </div>
+
+              <div class="summary-item">
+                <div class="summary-title">Общие расходы за месяц</div>
+                <div class="summary-value" id="totalExpensesResult">0 ₽</div>
+              </div>
+
+              <div class="summary-item">
+                <div class="summary-title">Остаток бюджета</div>
+                <div class="summary-value" id="balanceResult">0 ₽</div>
+              </div>
+
+              <div class="summary-item">
+                <div class="summary-title">Процент сбережений</div>
+                <div class="summary-value" id="savingsPercentResult">0%</div>
+              </div>
+            </div>
+
+            <div class="mini-info">
+              <div class="mini-card">
+                <div class="mini-title">Расходов в месяце</div>
+                <div class="mini-value" id="expenseCountResult">0</div>
+              </div>
+
+              <div class="mini-card">
+                <div class="mini-title">Средний расход</div>
+                <div class="mini-value" id="averageExpenseResult">0 ₽</div>
+              </div>
+
+              <div class="mini-card">
+                <div class="mini-title">На человека</div>
+                <div class="mini-value" id="perPersonResult">0 ₽</div>
+              </div>
+
+              <div class="mini-card">
+                <div class="mini-title">Резервный фонд</div>
+                <div class="mini-value" id="reserveStatusOverview">0%</div>
+              </div>
+            </div>
+
+            <div class="progress-wrap">
+              <div class="progress-top">
+                <span>Доля расходов от дохода</span>
+                <span id="expensePercentLabel">0%</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" id="expenseProgressBar"></div>
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Показатель</th>
+                  <th>Значение</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Количество доходов</td>
+                  <td id="incomeCategoriesTable">0</td>
+                </tr>
+                <tr>
+                  <td>Количество расходов в месяце</td>
+                  <td id="expenseCategoriesTable">0</td>
+                </tr>
+                <tr>
+                  <td>План накоплений месяца</td>
+                  <td id="goalTable">0 ₽</td>
+                </tr>
+                <tr>
+                  <td>Выполнение плана накоплений</td>
+                  <td id="goalStatusTable">0%</td>
+                </tr>
+                <tr>
+                  <td>Статус бюджета</td>
+                  <td id="statusTable">Не рассчитан</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="tips">
+              <h3>Финансовая рекомендация</h3>
+              <div class="tips-text" id="tipsText">
+                Добавьте регулярные и разовые доходы/расходы — обзор автоматически соберёт общую картину по выбранному месяцу.
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="badge">План / факт</div>
+              <h2>Сравнение план / факт</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Показатель</th>
+                    <th>План</th>
+                    <th>Факт</th>
+                    <th>Отклонение</th>
+                  </tr>
+                </thead>
+                <tbody id="planFactTableBody"></tbody>
+              </table>
+            </div>
+
+            <div class="card">
+              <div class="badge">Категории</div>
+              <h2>Разбивка расходов по категориям</h2>
+              <div id="categoryTotals" class="category-grid"></div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="badge">Дневная аналитика</div>
+              <h2>Итоги по дням</h2>
+
+            <!-- =====================================================
+                 КАЛЕНДАРЬ: КЛИК ПО ДАТЕ
+                 ===================================================== -->
+                <div class="calendar-wrap">
+                  <div class="calendar-topbar">
+                    <div class="calendar-month-nav">
+                      <button class="btn-light" type="button" data-call="shiftCalendarMonth(-1)">&lt;</button>
+                      <div class="calendar-month-label" id="calendarMonthLabel"></div>
+                      <button class="btn-light" type="button" data-call="shiftCalendarMonth(1)">&gt;</button>
+                    </div>
+                    <div class="muted">Клик по дате показывает доходы и расходы</div>
+                  </div>
+
+                  <div class="calendar-layout">
+                    <div class="calendar">
+                      <div class="calendar-dow">
+                        <div>Пн</div>
+                        <div>Вт</div>
+                        <div>Ср</div>
+                        <div>Чт</div>
+                        <div>Пт</div>
+                        <div>Сб</div>
+                        <div>Вс</div>
+                      </div>
+                      <div class="calendar-grid" id="calendarGrid"></div>
+                    </div>
+
+                    <div class="calendar-details">
+                      <div class="calendar-details-title" id="calendarSelectedDayTitle">—</div>
+
+                      <div class="calendar-metrics">
+                        <div>
+                          <div class="data-title">Доход за день</div>
+                          <div class="data-value" id="calendarIncomeTotal">0 ₽</div>
+                        </div>
+                        <div>
+                          <div class="data-title">Расходы (за день)</div>
+                          <div class="data-value" id="calendarExpenseTotal">0 ₽</div>
+                        </div>
+                      </div>
+
+                      <div class="muted" id="calendarIncomeNote">В дневной аналитике показываются только операции выбранной даты.</div>
+
+                      <div class="calendar-balance-box neutral hidden" id="calendarBalanceBox">
+                        <div class="data-title">Баланс дня</div>
+                        <div class="data-value" id="calendarBalanceTotal">0 ₽</div>
+                      </div>
+
+                      <div class="calendar-subtitle">Доходы по выбранной дате</div>
+                      <div id="calendarDailyIncomeForDay" class="data-list"></div>
+
+                      <div class="calendar-subtitle">Расходы по выбранной дате</div>
+                      <div id="calendarExpensesForDay" class="data-list"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="actions" style="margin-top:10px;">
+                  <button class="btn-light" type="button" data-call="toggleDailySummary()">Показать/скрыть список по дням</button>
+                </div>
+                <div id="dailySummary" class="category-grid hidden"></div>
+            </div>
+
+            <div class="card">
+              <div class="badge">Недельная аналитика</div>
+              <h2>Итоги недели</h2>
+              <div class="weekly-toolbar">
+                <button class="btn-light" type="button" data-call="shiftSelectedWeek(-1)">← Предыдущая</button>
+                <div class="weekly-range" id="weeklyRangeLabel">—</div>
+                <button class="btn-light" type="button" data-call="shiftSelectedWeek(1)">Следующая →</button>
+              </div>
+              <p class="muted">По умолчанию показывается неделя выбранной даты в календаре. Если дата не выбрана, используется текущая неделя в рамках выбранного месяца.</p>
+              <div id="weeklySummary" class="weekly-summary"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =====================================================
+             ВКЛАДКА 2: РАСХОДЫ
+             ===================================================== -->
+        <div class="tab-panel" id="tab-expenses">
+          <div class="grid-2">
+            <div class="card">
+              <div class="badge">Регулярные расходы</div>
+              <h2>Регулярные расходы</h2>
+              <p class="muted">Это постоянные расходы, которые автоматически учитываются в обзоре выбранного месяца вместе с расходами по дням.</p>
+
+              <div id="monthlyExpenseList" class="data-list"></div>
+
+              <div class="actions">
+                <button class="btn-light" type="button" data-call="addMonthlyExpenseItem()">+ Добавить регулярный расход</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="badge">Добавление / редактирование</div>
+              <h2>Ежедневный расход</h2>
+              <p class="muted">Можно добавлять новые расходы и редактировать уже созданные записи.</p>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label for="expenseAmount">Сумма (₽)</label>
+                  <input type="number" id="expenseAmount" min="0" placeholder="Например: 1250" />
+                </div>
+
+                <div class="field">
+                  <label for="expenseCategory">Категория</label>
+                  <input type="text" id="expenseCategory" placeholder="Например: Продукты" />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label for="expenseDate">Дата</label>
+                  <input type="date" id="expenseDate" />
+                </div>
+
+                <div class="field">
+                  <label for="expenseComment">Комментарий</label>
+                  <input type="text" id="expenseComment" placeholder="Например: Супермаркет" />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="btn-primary" type="button" id="expenseSubmitBtn" data-call="submitExpense()">+ Добавить расход</button>
+                <button class="btn-light" type="button" data-call="fillToday()">Сегодня</button>
+                <button class="btn-warning hidden" type="button" id="cancelEditBtn" data-call="cancelExpenseEdit()">Отменить редактирование</button>
+              </div>
+
+              <div class="footer-note">
+                Расход автоматически будет учтен в бюджете того месяца, в который попадает его дата.
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="badge">Поиск и фильтрация</div>
+            <h2>Фильтры расходов</h2>
+
+            <div class="grid-4">
+              <div class="field">
+                <label for="expenseSearch">Поиск</label>
+                <input type="text" id="expenseSearch" placeholder="Поиск по категории или комментарию" />
+              </div>
+
+              <div class="field">
+                <label for="expenseCategoryFilter">Фильтр по категории</label>
+                <select id="expenseCategoryFilter">
+                  <option value="">Все категории</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="expenseMonthFilter">Фильтр по месяцу</label>
+                <input type="month" id="expenseMonthFilter" />
+              </div>
+
+              <div class="field">
+                <label>&nbsp;</label>
+                <button class="btn-light" type="button" style="width:100%;" data-call="resetExpenseFilters()">Сбросить фильтры</button>
+              </div>
+            </div>
+
+            <div class="grid-4">
+              <div class="field">
+                <label for="expenseMinAmount">Сумма от (₽)</label>
+                <input type="number" id="expenseMinAmount" min="0" />
+              </div>
+              <div class="field">
+                <label for="expenseMaxAmount">Сумма до (₽)</label>
+                <input type="number" id="expenseMaxAmount" min="0" />
+              </div>
+              <div class="field">
+                <label for="expenseDateFrom">Дата с</label>
+                <input type="date" id="expenseDateFrom" />
+              </div>
+              <div class="field">
+                <label for="expenseDateTo">Дата по</label>
+                <input type="date" id="expenseDateTo" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="badge">Детальные расходы</div>
+            <h2>Список расходов</h2>
+            <div id="expensesList" class="data-list"></div>
+          </div>
+
+          <div class="card">
+            <div class="badge">Лимиты категорий</div>
+            <h2>Лимиты расходов на месяц</h2>
+            <div class="grid-3">
+              <div class="field">
+                <label for="limitCategory">Категория</label>
+                <input type="text" id="limitCategory" placeholder="Например: Продукты" />
+              </div>
+              <div class="field">
+                <label for="limitAmount">Лимит (₽)</label>
+                <input type="number" id="limitAmount" min="0" />
+              </div>
+              <div class="field">
+                <label>&nbsp;</label>
+                <button class="btn-light" type="button" style="width:100%;" data-call="addCategoryLimit()">+ Добавить лимит</button>
+              </div>
+            </div>
+            <div id="limitsList" class="data-list"></div>
+          </div>
+        </div>
+
+        <!-- =====================================================
+             ВКЛАДКА: ДОХОДЫ
+             ===================================================== -->
+        <div class="tab-panel" id="tab-incomes">
+          <div class="grid-2">
+            <div class="card">
+              <div class="badge">Регулярные доходы</div>
+              <h2>Регулярные доходы</h2>
+              <p class="muted">Это постоянные доходы, которые автоматически учитываются в обзоре выбранного месяца вместе с поступлениями по дням.</p>
+
+              <div id="incomeList" class="data-list"></div>
+
+              <div class="actions">
+                <button class="btn-light" type="button" data-call="addIncomeItem()">+ Добавить регулярный доход</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="badge">Поступления по дням</div>
+              <h2>Ежедневный доход</h2>
+              <p class="muted">Можно добавлять поступления и редактировать уже созданные записи.</p>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label for="dailyIncomeAmount">Сумма (₽)</label>
+                  <input type="number" id="dailyIncomeAmount" min="0" placeholder="Например: 1250" />
+                </div>
+
+                <div class="field">
+                  <label for="dailyIncomeCategory">Источник / категория</label>
+                  <input type="text" id="dailyIncomeCategory" placeholder="Например: Зарплата, Подработка" />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label for="dailyIncomeDate">Дата</label>
+                  <input type="date" id="dailyIncomeDate" />
+                </div>
+
+                <div class="field">
+                  <label for="dailyIncomeComment">Комментарий</label>
+                  <input type="text" id="dailyIncomeComment" placeholder="Например: Наличные / Перевод" />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="btn-primary" type="button" id="dailyIncomeSubmitBtn" data-call="submitDailyIncome()">+ Добавить поступление</button>
+                <button class="btn-light" type="button" data-call="fillTodayDailyIncome()">Сегодня</button>
+                <button class="btn-warning hidden" type="button" id="cancelDailyIncomeEditBtn" data-call="cancelDailyIncomeEdit()">Отменить редактирование</button>
+              </div>
+
+              <div class="footer-note">
+                Поступления по дням учитываются в фактическом доходе месяца, если в истории месяца не задан ручной факт-доход.
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="badge">Детальные поступления</div>
+            <h2>Список ежедневных доходов</h2>
+            <div id="dailyIncomesList" class="data-list"></div>
+          </div>
+
+
+        </div>
+
+        <!-- =====================================================
+             ВКЛАДКА: АВТОПЛАТЕЖИ И АВТОПОСТУПЛЕНИЯ
+             ===================================================== -->
+        <div class="tab-panel" id="tab-automation">
+          <div class="card">
+            <div class="badge">Автоматизация</div>
+            <h2>Автоплатежи и автопоступления</h2>
+            <p class="muted">
+              Это необязательные правила автодобавления операций по датам. Используй их, если хочешь,
+              чтобы регулярный расход или поступление автоматически появлялись в нужный день каждого месяца.
+              Базовые суммы по-прежнему можно вести отдельно во вкладках «Доходы» и «Расходы».
+            </p>
+
+            <div class="grid-4">
+              <div class="field">
+                <label for="recurringType">Тип операции</label>
+                <select id="recurringType">
+                  <option value="expense">Расход</option>
+                  <option value="income">Доход</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="recurringCategory">Категория</label>
+                <input type="text" id="recurringCategory" placeholder="Например: Аренда" />
+              </div>
+              <div class="field">
+                <label for="recurringAmount">Сумма (₽)</label>
+                <input type="number" id="recurringAmount" min="0" />
+              </div>
+              <div class="field">
+                <label for="recurringDay">День месяца</label>
+                <input type="number" id="recurringDay" min="1" max="31" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="recurringComment">Комментарий</label>
+              <input type="text" id="recurringComment" placeholder="Например: Ежемесячный платеж" />
+            </div>
+
+            <div class="actions">
+              <button class="btn-light" type="button" data-call="addRecurringRule()">+ Добавить правило</button>
+            </div>
+
+            <div class="footer-note">
+              Эти правила не заменяют обычные списки регулярных доходов и расходов, а дополняют их, когда нужна дата автодобавления.
+            </div>
+
+            <div id="recurringRulesList" class="data-list"></div>
+          </div>
+        </div>
+
+        <!-- =====================================================
+             ВКЛАДКА 3: ИСТОРИЯ / ПЛАН-ФАКТ
+             ===================================================== -->
+        <div class="tab-panel" id="tab-history">
+          <div class="card">
+            <div class="badge">Ручное редактирование истории</div>
+            <h2>История по месяцам</h2>
+            <p class="muted">
+              Здесь можно вручную редактировать план и факт по месяцам.
+              Если факт-доход или факт-расход пустой, калькулятор берет фактические данные из доходов и ежедневных расходов.
+            </p>
+
+            <div class="grid-4">
+              <div class="field">
+                <label for="historyMonth">Месяц</label>
+                <input type="month" id="historyMonth" />
+              </div>
+
+              <div class="field">
+                <label for="historyPlanIncome">План дохода (₽)</label>
+                <input type="number" id="historyPlanIncome" min="0" />
+              </div>
+
+              <div class="field">
+                <label for="historyPlanExpense">План расходов (₽)</label>
+                <input type="number" id="historyPlanExpense" min="0" />
+              </div>
+
+              <div class="field">
+                <label for="historyPlanSavings">План накоплений (₽)</label>
+                <input type="number" id="historyPlanSavings" min="0" />
+              </div>
+            </div>
+
+            <div class="grid-3">
+              <div class="field">
+                <label for="historyFactIncome">Факт дохода (необязательно, ₽)</label>
+                <input type="number" id="historyFactIncome" min="0" />
+              </div>
+
+              <div class="field">
+                <label for="historyFactExpense">Факт расходов (необязательно, ₽)</label>
+                <input type="number" id="historyFactExpense" min="0" />
+              </div>
+
+              <div class="field">
+                <label for="historyNote">Заметка</label>
+                <input type="text" id="historyNote" placeholder="Например: отпуск, ремонт, премия" />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn-primary" type="button" data-call="upsertMonthRecord()">Сохранить месяц</button>
+              <button class="btn-light" type="button" data-call="prefillSelectedMonthToHistory()">Подставить текущий месяц</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="badge">Сохраненные месяцы</div>
+            <h2>Список истории</h2>
+            <div id="monthHistoryList" class="data-list"></div>
+          </div>
+        </div>
+
+        <!-- =====================================================
+             ВКЛАДКА 4: ЦЕЛИ И РЕЗЕРВ
+             ===================================================== -->
+        <div class="tab-panel" id="tab-goals">
+          <div class="grid-2">
+            <div class="card">
+              <div class="badge">Финансовые цели</div>
+              <h2>Добавить цель</h2>
+
+              <div class="field">
+                <label for="goalName">Название цели</label>
+                <input type="text" id="goalName" placeholder="Например: Отпуск, машина, ремонт" />
+              </div>
+
+              <div class="grid-3">
+                <div class="field">
+                  <label for="goalTarget">Целевая сумма (₽)</label>
+                  <input type="number" id="goalTarget" min="0" />
+                </div>
+
+                <div class="field">
+                  <label for="goalCurrent">Уже накоплено (₽)</label>
+                  <input type="number" id="goalCurrent" min="0" />
+                </div>
+
+                <div class="field">
+                  <label for="goalDeadline">Срок</label>
+                  <input type="date" id="goalDeadline" />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="btn-primary" type="button" data-call="addGoal()">+ Добавить цель</button>
+              </div>
+
+              <div class="footer-note">
+                Цели хранятся отдельно от резервного фонда. Для каждой цели считается процент выполнения.
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="badge">Резервный фонд</div>
+              <h2>Настройки резерва</h2>
+
+              <div class="grid-3">
+                <div class="field">
+                  <label for="reserveTarget">Цель резерва (₽)</label>
+                  <input type="number" id="reserveTarget" min="0" />
+                </div>
+
+                <div class="field">
+                  <label for="reserveCurrent">Текущий резерв (₽)</label>
+                  <input type="number" id="reserveCurrent" min="0" />
+                </div>
+
+                <div class="field">
+                  <label for="reserveMonthly">Пополнение в месяц (₽)</label>
+                  <input type="number" id="reserveMonthly" min="0" />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="btn-success" type="button" data-call="saveReserveFund()">Сохранить резерв</button>
+              </div>
+
+              <table>
+                <tbody>
+                  <tr>
+                    <td>Процент наполнения</td>
+                    <td id="reservePercentCell">0%</td>
+                  </tr>
+                  <tr>
+                    <td>Осталось накопить</td>
+                    <td id="reserveRemainingCell">0 ₽</td>
+                  </tr>
+                  <tr>
+                    <td>Примерно месяцев до цели</td>
+                    <td id="reserveMonthsCell">—</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="badge">Список целей</div>
+            <h2>Мои цели</h2>
+            <div id="goalsList"></div>
+          </div>
+        </div>
+
+        <!-- =====================================================
+             ВКЛАДКА 5: ГРАФИКИ
+             ===================================================== -->
+        <div class="tab-panel" id="tab-charts">
+          <div class="chart-grid">
+            <div class="card chart-box">
+              <div class="chart-title">Линейный график расходов по месяцам</div>
+              <div class="chart-subtitle">
+                Настоящий Canvas-график фактических расходов за 12 месяцев.
+              </div>
+              <canvas id="monthlyExpenseChart" width="700" height="320"></canvas>
+            </div>
+
+            <div class="card chart-box">
+              <div class="chart-title">Линейный график: план и факт</div>
+              <div class="chart-subtitle">
+                Сравнение плановых и фактических расходов по месяцам.
+              </div>
+              <canvas id="planFactChart" width="700" height="320"></canvas>
+            </div>
+          </div>
+
+          <div class="card chart-box">
+            <div class="chart-title">Диаграмма расходов по месяцам</div>
+            <div class="chart-subtitle">
+              Столбчатая Canvas-диаграмма по фактическим расходам.
+            </div>
+            <canvas id="monthlyExpenseBarChart" width="1200" height="340"></canvas>
+          </div>
+
+          <div class="card chart-box">
+            <div class="chart-title">Линейный график доходов по месяцам</div>
+            <div class="chart-subtitle">
+              Фактические доходы за 12 месяцев.
+            </div>
+            <canvas id="monthlyIncomeChart" width="1200" height="340"></canvas>
+          </div>
+        </div>
+
+        <!-- =====================================================
+             ВКЛАДКА 6: НАСТРОЙКИ / ИМПОРТ
+             ===================================================== -->
+        <div class="tab-panel" id="tab-settings">
+          <div class="card">
+            <div class="badge">Резервное копирование и восстановление</div>
+            <h2>Управление данными</h2>
+            <p class="section-text">
+              Здесь собраны все действия, связанные с сохранением, восстановлением и переносом данных.
+              Автосохранение работает само после входа в профиль, поэтому отдельная кнопка для него не нужна.
+            </p>
+
+            <div class="grid-2">
+              <div class="card inner-card">
+                <div class="badge">Локальные данные</div>
+                <h3>Сохранение в браузере</h3>
+                <p class="muted">Подходит, если нужно вручную сохранить текущее состояние или восстановить его позже на этом же устройстве.</p>
+                <div class="actions settings-actions-compact">
+                  <button class="btn-success" type="button" data-call="saveData()">Сохранить в браузере</button>
+                  <button class="btn-light" type="button" data-call="loadData()">Загрузить из браузера</button>
+                </div>
+              </div>
+
+              <div class="card inner-card">
+                <div class="badge">Резервная копия</div>
+                <h3>Файл с данными</h3>
+                <p class="muted">Используй для переноса данных на другой компьютер или как запасную копию на случай сбоя.</p>
+                <div class="actions settings-actions-compact">
+                  <button class="btn-light" type="button" data-call="exportData()">Скачать резервную копию</button>
+                  <button class="btn-light" type="button" data-call="triggerImport()">Восстановить из файла</button>
+                  <button class="btn-light" type="button" data-call="printReport()">PDF / Печать</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card inner-card danger-zone">
+              <div class="badge">Опасная операция</div>
+              <h3>Полный сброс</h3>
+              <p class="muted">Удаляет все локальные данные текущего профиля с этого устройства. Перед сбросом лучше скачать резервную копию.</p>
+              <div class="actions settings-actions-compact">
+                <button class="btn-danger" type="button" data-call="resetAllData()">Сбросить все данные</button>
+              </div>
+            </div>
+
+            <div class="footer-note">
+              Все данные хранятся локально в браузере. Никакие внешние библиотеки и серверы не используются.
+            </div>
+
+            <input type="file" id="jsonFileInput" class="hidden" accept=".json,application/json" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ
+       ===================================================== -->
+  <div id="authModal" class="auth-modal hidden">
+    <div class="auth-dialog">
+      <div class="auth-top">
+        <h3 class="auth-title" id="authModalTitle">Вход</h3>
+        <button class="btn-light" type="button" data-call="closeAuthModal()">Закрыть</button>
+      </div>
+
+      <div id="authFormSection">
+        <div class="auth-tabs">
+          <button class="tab-btn active" type="button" id="authLoginTabBtn" data-call="switchAuthMode('login')">Вход</button>
+          <button class="tab-btn" type="button" id="authRegisterTabBtn" data-call="switchAuthMode('register')">Регистрация</button>
+        </div>
+
+        <div class="field">
+          <label for="authEmail">Электронная почта</label>
+          <input type="email" id="authEmail" autocomplete="email" placeholder="Например: ivan@example.com" />
+        </div>
+
+        <div class="field">
+          <label for="authPassword">Пароль</label>
+          <input type="password" id="authPassword" autocomplete="current-password" placeholder="Минимум 4 символа" />
+        </div>
+
+        <div class="field checkbox-field">
+          <label class="checkbox-label">
+            <input type="checkbox" id="authRemember" />
+            <span>Запомнить только почту на этом устройстве</span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" type="button" id="authSubmitBtn" data-call="submitAuth()">Войти</button>
+        </div>
+      </div>
+
+      <div id="profileSection" class="hidden">
+        <div class="profile-card">
+          <div class="profile-email-label">Текущий профиль</div>
+          <div class="profile-email" id="profileEmailLabel">—</div>
+        </div>
+
+        <div class="field">
+          <label for="currentPassword">Текущий пароль</label>
+          <input type="password" id="currentPassword" autocomplete="current-password" placeholder="Введите текущий пароль" />
+        </div>
+
+        <div class="field">
+          <label for="newPassword">Новый пароль</label>
+          <input type="password" id="newPassword" autocomplete="new-password" placeholder="Минимум 4 символа" />
+        </div>
+
+        <div class="field">
+          <label for="confirmNewPassword">Подтверждение нового пароля</label>
+          <input type="password" id="confirmNewPassword" autocomplete="new-password" placeholder="Повторите новый пароль" />
+        </div>
+
+        <div class="actions auth-profile-actions">
+          <button class="btn-primary" type="button" data-call="changePassword()">Сменить пароль</button>
+          <button class="btn-light" type="button" data-call="logoutUser()">Выйти</button>
+          <button class="btn-light" type="button" data-call="logoutAllSessions()">Выйти из всех сохранённых сессий</button>
+        </div>
+      </div>
+
+      <div class="auth-msg" id="authMessage"></div>
+    </div>
+  </div>
+
+  <div id="toastWrap" class="toast-wrap"></div>
+  <script defer src="js/app.bundle.js"></script>
+</body>
+</html>

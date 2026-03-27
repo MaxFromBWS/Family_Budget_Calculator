@@ -1,0 +1,10 @@
+{
+  "name": "family-budget-calculator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Калькулятор семейного бюджета на HTML, CSS и JavaScript",
+  "scripts": {
+    "dev": "python3 -m http.server 4173",
+    "start": "python3 -m http.server 4173"
+  }
+}
