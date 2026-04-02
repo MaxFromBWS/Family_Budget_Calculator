@@ -1,3 +1,5 @@
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
     /* =========================================================
        1. ТЕМЫ: СВЕТЛАЯ / ТЕМНАЯ
        ========================================================= */
@@ -24,7 +26,7 @@
       --accent-2: #10b981;
       --accent-3: #f59e0b;
       --accent-4: #ef4444;
-      --accent-5: #8b5cf6;
+      --accent-5: #b45309;
       --accent-6: #06b6d4;
       --accent-7: #ec4899;
       --glow: rgba(37, 99, 235, 0.16);
@@ -33,6 +35,28 @@
         radial-gradient(circle at top left, rgba(37,99,235,0.12), transparent 28%),
         radial-gradient(circle at top right, rgba(16,185,129,0.10), transparent 22%),
         linear-gradient(135deg, #f4f7fb, #eef6ff 45%, #f5fbf7);
+
+      /* Дизайн-детали (орнаменты/фактура) */
+      --gold: #d4af37;
+      --gold-soft: rgba(212,175,55,0.18);
+      --border-gradient: linear-gradient(
+        135deg,
+        rgba(212,175,55,0.55),
+        rgba(37,99,235,0.18),
+        rgba(16,185,129,0.18)
+      );
+
+      --font-display: "Cormorant Garamond", serif;
+      --font-body: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+      --text-secondary: #6b7280;
+      --muted: var(--text-soft);
+      --panel-2: rgba(255, 255, 255, 0.86);
+
+      --grid-opacity: 0.16;
+      --noise-opacity: 0.065;
+      --row-alt: rgba(37, 99, 235, 0.04);
     }
 
     body[data-theme="dark"] {
@@ -58,7 +82,7 @@
       --accent-2: #34d399;
       --accent-3: #fbbf24;
       --accent-4: #fb7185;
-      --accent-5: #a78bfa;
+      --accent-5: #f59e0b;
       --accent-6: #22d3ee;
       --accent-7: #f472b6;
       --glow: rgba(96, 165, 250, 0.20);
@@ -67,6 +91,23 @@
         radial-gradient(circle at top left, rgba(37,99,235,0.18), transparent 24%),
         radial-gradient(circle at top right, rgba(16,185,129,0.14), transparent 18%),
         linear-gradient(135deg, #0b1220, #0f172a 40%, #111827);
+
+      --gold: #f5d06f;
+      --gold-soft: rgba(245,208,111,0.22);
+      --border-gradient: linear-gradient(
+        135deg,
+        rgba(245,208,111,0.46),
+        rgba(96,165,250,0.18),
+        rgba(34,211,238,0.14)
+      );
+
+      --text-secondary: #9aa6bd;
+      --muted: var(--text-soft);
+      --panel-2: rgba(15, 23, 42, 0.68);
+
+      --grid-opacity: 0.22;
+      --noise-opacity: 0.11;
+      --row-alt: rgba(96, 165, 250, 0.10);
     }
 
     /* =========================================================
@@ -78,26 +119,62 @@
 
     body {
       margin: 0;
-      font-family: Inter, Arial, sans-serif;
+      font-family: var(--font-body);
       background: var(--page-gradient);
       color: var(--text);
       padding: 20px;
+      position: relative;
+      font-feature-settings: "liga" 1, "kern" 1;
+      text-rendering: optimizeLegibility;
       transition: background 0.3s ease, color 0.3s ease;
     }
 
     .app {
       max-width: 1600px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(to right, rgba(0,0,0,0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.025) 1px, transparent 1px);
+      background-size: 44px 44px;
+      opacity: var(--grid-opacity);
+      transform: translateZ(0);
+      mix-blend-mode: overlay;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: var(--noise-opacity);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+      background-size: 220px 220px;
+      mix-blend-mode: overlay;
+      transform: translateZ(0);
     }
 
     .shell {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background-color: transparent;
+      border: 1px solid transparent;
       border-radius: 26px;
       box-shadow: var(--shadow);
       overflow: hidden;
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
+      background-image: linear-gradient(var(--panel), var(--panel)), var(--border-gradient);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
     }
 
     .header {
@@ -105,6 +182,18 @@
       color: #fff;
       padding: 26px;
       position: relative;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        repeating-conic-gradient(from 210deg at 20% 20%, rgba(255,255,255,0.22) 0 9deg, transparent 9deg 18deg),
+        linear-gradient(180deg, rgba(0,0,0,0.10), transparent 55%);
+      opacity: 0.35;
+      mask-image: radial-gradient(circle at 20% 20%, rgba(0,0,0,1), rgba(0,0,0,0) 62%);
     }
 
     .header-top {
@@ -254,6 +343,7 @@
       margin: 0 0 10px;
       font-size: 34px;
       line-height: 1.1;
+      font-family: var(--font-display);
     }
 
     .header p {
@@ -268,22 +358,27 @@
     }
 
     .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
+      background-color: transparent;
+      border: 1px solid transparent;
       border-radius: 22px;
       box-shadow: var(--shadow-soft);
       padding: 20px;
       margin-bottom: 20px;
+      background-image: linear-gradient(var(--card-bg), var(--card-bg)), var(--border-gradient);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
     }
 
     .card h2 {
       margin: 0 0 14px;
       font-size: 24px;
+      font-family: var(--font-display);
     }
 
     .card h3 {
       margin: 18px 0 12px;
       font-size: 18px;
+      font-family: var(--font-display);
     }
 
     .badge {
@@ -291,11 +386,11 @@
       margin-bottom: 12px;
       padding: 7px 12px;
       border-radius: 999px;
-      background: rgba(37, 99, 235, 0.10);
-      color: var(--primary);
+      background: rgba(212, 175, 55, 0.14);
+      color: var(--gold);
       font-size: 12px;
       font-weight: 800;
-      border: 1px solid rgba(37, 99, 235, 0.12);
+      border: 1px solid rgba(212, 175, 55, 0.24);
     }
 
     .muted {
@@ -425,11 +520,33 @@
       cursor: pointer;
       font-size: 14px;
       font-weight: 800;
+      position: relative;
+      overflow: hidden;
       transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
       box-shadow: 0 6px 14px rgba(0,0,0,0.10);
     }
 
     button:hover { transform: translateY(-1px); }
+
+    @keyframes fx-sheen {
+      0% { transform: translateX(-120%) rotate(10deg); }
+      60% { transform: translateX(0%) rotate(10deg); }
+      100% { transform: translateX(120%) rotate(10deg); }
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.55) 35%, transparent 70%);
+      opacity: 0;
+      transform: translateX(-120%) rotate(10deg);
+    }
+
+    button:hover::before {
+      opacity: 0.55;
+      animation: fx-sheen 900ms cubic-bezier(.2,.8,.2,1) both;
+    }
 
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: var(--primary-hover); }
@@ -437,7 +554,7 @@
     .btn-warning { background: var(--warning); color: #111827; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-light {
-      background: var(--bg-secondary);
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78)), var(--bg-secondary);
       color: var(--text);
       border: 1px solid var(--border);
     }
@@ -563,18 +680,25 @@
 
     .tab-btn {
       padding: 12px 16px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: var(--bg-secondary);
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.0);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.70), rgba(255,255,255,0.18)) padding-box,
+        var(--border-gradient) border-box;
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
       color: var(--text);
       font-weight: 800;
       box-shadow: none;
     }
 
     .tab-btn.active {
-      background: var(--primary);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.18), transparent 55%),
+        linear-gradient(135deg, var(--primary), rgba(212,175,55,0.92));
       color: #fff;
-      border-color: var(--primary);
+      border-color: rgba(255,255,255,0.14);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.18), 0 0 0 4px rgba(212,175,55,0.12);
     }
 
     .tab-panel {
@@ -583,6 +707,12 @@
 
     .tab-panel.active {
       display: block;
+      animation: panel-in 0.35s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    @keyframes panel-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* =========================================================
@@ -694,7 +824,7 @@
       height: 100%;
       width: 0%;
       border-radius: inherit;
-      background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+      background: linear-gradient(90deg, var(--accent-2), var(--accent-1), var(--gold));
       transition: width 0.4s ease;
     }
 
@@ -720,11 +850,19 @@
     }
 
     th {
-      background: var(--table-head);
+      background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.68)), var(--table-head);
       font-weight: 800;
     }
 
     tr:last-child td { border-bottom: none; }
+
+    tbody tr:nth-child(even) td {
+      background: var(--row-alt);
+    }
+
+    tbody tr:hover td {
+      background: rgba(212,175,55,0.08);
+    }
 
     .data-list {
       display: grid;
@@ -1206,6 +1344,11 @@
         background: #ffffff !important;
         color: #000 !important;
         padding: 0;
+      }
+
+      body::before,
+      body::after {
+        display: none !important;
       }
 
       .shell,
