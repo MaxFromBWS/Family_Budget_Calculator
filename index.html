@@ -820,7 +820,10 @@
 
         <div class="field">
           <label for="authPassword">Пароль</label>
-          <input type="password" id="authPassword" autocomplete="current-password" placeholder="Минимум 4 символа" />
+          <div class="password-field">
+            <input type="password" id="authPassword" autocomplete="current-password" placeholder="Минимум 4 символа" />
+            <button class="password-toggle" type="button" data-target="authPassword" aria-label="Показать пароль" aria-pressed="false"></button>
+          </div>
         </div>
 
         <div class="field checkbox-field">
@@ -843,17 +846,26 @@
 
         <div class="field">
           <label for="currentPassword">Текущий пароль</label>
-          <input type="password" id="currentPassword" autocomplete="current-password" placeholder="Введите текущий пароль" />
+          <div class="password-field">
+            <input type="password" id="currentPassword" autocomplete="current-password" placeholder="Введите текущий пароль" />
+            <button class="password-toggle" type="button" data-target="currentPassword" aria-label="Показать пароль" aria-pressed="false"></button>
+          </div>
         </div>
 
         <div class="field">
           <label for="newPassword">Новый пароль</label>
-          <input type="password" id="newPassword" autocomplete="new-password" placeholder="Минимум 4 символа" />
+          <div class="password-field">
+            <input type="password" id="newPassword" autocomplete="new-password" placeholder="Минимум 4 символа" />
+            <button class="password-toggle" type="button" data-target="newPassword" aria-label="Показать пароль" aria-pressed="false"></button>
+          </div>
         </div>
 
         <div class="field">
           <label for="confirmNewPassword">Подтверждение нового пароля</label>
-          <input type="password" id="confirmNewPassword" autocomplete="new-password" placeholder="Повторите новый пароль" />
+          <div class="password-field">
+            <input type="password" id="confirmNewPassword" autocomplete="new-password" placeholder="Повторите новый пароль" />
+            <button class="password-toggle" type="button" data-target="confirmNewPassword" aria-label="Показать пароль" aria-pressed="false"></button>
+          </div>
         </div>
 
         <div class="actions auth-profile-actions">

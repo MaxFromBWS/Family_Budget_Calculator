@@ -314,7 +314,47 @@ function createEmptyAppData() {
       if (currentPassword) currentPassword.value = '';
       if (newPassword) newPassword.value = '';
       if (confirmNewPassword) confirmNewPassword.value = '';
+      resetPasswordVisibility();
       document.getElementById('authMessage').textContent = '';
+    }
+
+    function resetPasswordVisibility() {
+      document.querySelectorAll('.password-toggle[data-target]').forEach(btn => {
+        const targetId = btn.getAttribute('data-target');
+        const input = targetId ? document.getElementById(targetId) : null;
+        if (input && input.type !== 'password') input.type = 'password';
+        setPasswordToggleState(btn, false);
+        btn.setAttribute('aria-pressed', 'false');
+        btn.setAttribute('aria-label', 'Показать пароль');
+      });
+    }
+
+    const EYE_ICON_OPEN = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.6 12c2.6-5.3 6.5-8 9.4-8s6.8 2.7 9.4 8c-2.6 5.3-6.5 8-9.4 8s-6.8-2.7-9.4-8Z" stroke-width="1.9" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" stroke-width="1.9"/></svg>`;
+    const EYE_ICON_CLOSED = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.2 12c2.4-4.9 6.1-7.4 8.8-7.4 2.7 0 6.4 2.5 8.8 7.4-1.1 2.2-2.5 3.9-4.2 5.1" stroke-width="1.9" stroke-linecap="round"/><path d="M9.2 19.0c.9.3 1.8.4 2.8.4 2.9 0 6.8-2.7 9.4-7.4" stroke-width="1.9" stroke-linecap="round" opacity=".0"/><path d="M4 4l16 16" stroke-width="1.9" stroke-linecap="round"/><path d="M10.2 10.2a3.2 3.2 0 0 0 4.5 4.5" stroke-width="1.9" stroke-linecap="round"/></svg>`;
+
+    function setPasswordToggleState(btn, isVisible) {
+      btn.innerHTML = isVisible ? EYE_ICON_CLOSED : EYE_ICON_OPEN;
+      btn.setAttribute('aria-pressed', isVisible ? 'true' : 'false');
+      btn.setAttribute('aria-label', isVisible ? 'Скрыть пароль' : 'Показать пароль');
+    }
+
+    function initPasswordToggles() {
+      document.querySelectorAll('.password-toggle[data-target]').forEach(btn => {
+        setPasswordToggleState(btn, false);
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-target');
+          const input = targetId ? document.getElementById(targetId) : null;
+          if (!input) return;
+          const nextVisible = input.type === 'password';
+          input.type = nextVisible ? 'text' : 'password';
+          setPasswordToggleState(btn, nextVisible);
+          input.focus();
+          try {
+            const len = input.value?.length ?? 0;
+            input.setSelectionRange(len, len);
+          } catch (_) {}
+        });
+      });
     }
 
     function clearLegacyRememberedPassword() {
@@ -2747,6 +2787,7 @@ function createEmptyAppData() {
       initTabs();
       initTheme();
       initAuth();
+      initPasswordToggles();
       initUXEnhancements();
       initActionDelegation();
       maybeShowOnboarding();
