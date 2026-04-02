@@ -860,8 +860,13 @@
     }
 
     th {
-      background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.68)), var(--table-head);
+      background: linear-gradient(180deg, rgba(255,255,255,0.58), rgba(255,255,255,0.22)), var(--table-head);
       font-weight: 800;
+    }
+
+    body[data-theme="dark"] th {
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)), var(--table-head);
+      color: #eaf1ff;
     }
 
     tr:last-child td { border-bottom: none; }
