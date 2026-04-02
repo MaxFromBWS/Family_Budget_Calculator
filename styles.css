@@ -38,6 +38,7 @@
         rgba(16, 185, 129, 0.62) 100%
       );
       --hero-ornament-opacity: 0.26;
+      --header-dim: 0.28;
       --page-gradient:
         radial-gradient(circle at top left, rgba(37,99,235,0.12), transparent 28%),
         radial-gradient(circle at top right, rgba(16,185,129,0.10), transparent 22%),
@@ -101,6 +102,7 @@
         rgba(34, 211, 238, 0.18) 100%
       );
       --hero-ornament-opacity: 0.34;
+      --header-dim: 0.12;
       --page-gradient:
         radial-gradient(circle at top left, rgba(37,99,235,0.18), transparent 24%),
         radial-gradient(circle at top right, rgba(16,185,129,0.14), transparent 18%),
@@ -200,6 +202,20 @@
       color: #fff;
       padding: 26px;
       position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(11, 18, 32, var(--header-dim)) 0%,
+        rgba(11, 18, 32, calc(var(--header-dim) * 0.65)) 100%
+      );
     }
 
     .header::after {
@@ -207,11 +223,17 @@
       position: absolute;
       inset: 0;
       pointer-events: none;
+      z-index: 1;
       background-image:
         repeating-conic-gradient(from 210deg at 20% 20%, rgba(255,255,255,0.22) 0 9deg, transparent 9deg 18deg),
         linear-gradient(180deg, rgba(0,0,0,0.10), transparent 55%);
       opacity: var(--hero-ornament-opacity);
       mask-image: radial-gradient(circle at 20% 20%, rgba(0,0,0,1), rgba(0,0,0,0) 62%);
+    }
+
+    .header > * {
+      position: relative;
+      z-index: 2;
     }
 
     .header-top {
