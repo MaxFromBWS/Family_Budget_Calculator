@@ -9,7 +9,7 @@
       --panel: rgba(255, 255, 255, 0.88);
       --text: #1f2937;
       --text-soft: #64748b;
-      --border: #d9e3f0;
+      --border: #bccfe9;
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
       --success: #16a34a;
@@ -30,7 +30,14 @@
       --accent-6: #06b6d4;
       --accent-7: #ec4899;
       --glow: rgba(37, 99, 235, 0.16);
-      --hero-gradient: linear-gradient(135deg, #2563eb, #10b981);
+      /* Верхняя шапка: теплая ар-деко гамма под золото/акценты проекта */
+      --hero-gradient: linear-gradient(
+        135deg,
+        rgba(212, 175, 55, 0.90) 0%,
+        rgba(37, 99, 235, 0.33) 46%,
+        rgba(16, 185, 129, 0.62) 100%
+      );
+      --hero-ornament-opacity: 0.26;
       --page-gradient:
         radial-gradient(circle at top left, rgba(37,99,235,0.12), transparent 28%),
         radial-gradient(circle at top right, rgba(16,185,129,0.10), transparent 22%),
@@ -41,9 +48,9 @@
       --gold-soft: rgba(212,175,55,0.18);
       --border-gradient: linear-gradient(
         135deg,
-        rgba(212,175,55,0.55),
-        rgba(37,99,235,0.18),
-        rgba(16,185,129,0.18)
+        rgba(212,175,55,0.78),
+        rgba(37,99,235,0.30),
+        rgba(16,185,129,0.26)
       );
 
       --font-display: "Cormorant Garamond", serif;
@@ -65,7 +72,7 @@
       --panel: rgba(16, 25, 44, 0.84);
       --text: #e5edf8;
       --text-soft: #9fb0c6;
-      --border: #22304a;
+      --border: #2c3f60;
       --primary: #60a5fa;
       --primary-hover: #3b82f6;
       --success: #22c55e;
@@ -86,7 +93,14 @@
       --accent-6: #22d3ee;
       --accent-7: #f472b6;
       --glow: rgba(96, 165, 250, 0.20);
-      --hero-gradient: linear-gradient(135deg, #1d4ed8, #059669);
+      /* Тёмная тема: мягче и темнее, чтобы контрастный белый текст не терялся */
+      --hero-gradient: linear-gradient(
+        135deg,
+        rgba(245, 208, 111, 0.24) 0%,
+        rgba(96, 165, 250, 0.26) 48%,
+        rgba(34, 211, 238, 0.18) 100%
+      );
+      --hero-ornament-opacity: 0.34;
       --page-gradient:
         radial-gradient(circle at top left, rgba(37,99,235,0.18), transparent 24%),
         radial-gradient(circle at top right, rgba(16,185,129,0.14), transparent 18%),
@@ -96,9 +110,9 @@
       --gold-soft: rgba(245,208,111,0.22);
       --border-gradient: linear-gradient(
         135deg,
-        rgba(245,208,111,0.46),
-        rgba(96,165,250,0.18),
-        rgba(34,211,238,0.14)
+        rgba(245,208,111,0.70),
+        rgba(96,165,250,0.32),
+        rgba(34,211,238,0.24)
       );
 
       --text-secondary: #9aa6bd;
@@ -172,7 +186,7 @@
       background-color: transparent;
       border: 1px solid transparent;
       border-radius: 26px;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow), 0 0 0 2px rgba(212,175,55,0.16), inset 0 0 0 1px rgba(255,255,255,0.26);
       overflow: hidden;
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -196,7 +210,7 @@
       background-image:
         repeating-conic-gradient(from 210deg at 20% 20%, rgba(255,255,255,0.22) 0 9deg, transparent 9deg 18deg),
         linear-gradient(180deg, rgba(0,0,0,0.10), transparent 55%);
-      opacity: 0.35;
+      opacity: var(--hero-ornament-opacity);
       mask-image: radial-gradient(circle at 20% 20%, rgba(0,0,0,1), rgba(0,0,0,0) 62%);
     }
 
@@ -365,12 +379,20 @@
       background-color: transparent;
       border: 1px solid transparent;
       border-radius: 22px;
-      box-shadow: var(--shadow-soft);
+      box-shadow: var(--shadow-soft), 0 0 0 2px rgba(212,175,55,0.12), inset 0 0 0 1px rgba(255,255,255,0.22);
       padding: 20px;
       margin-bottom: 20px;
       background-image: linear-gradient(var(--card-bg), var(--card-bg)), var(--border-gradient);
       background-origin: border-box;
       background-clip: padding-box, border-box;
+    }
+
+    body[data-theme="dark"] .shell {
+      box-shadow: var(--shadow), 0 0 0 2px rgba(245,208,111,0.14), inset 0 0 0 1px rgba(96,165,250,0.18);
+    }
+
+    body[data-theme="dark"] .card {
+      box-shadow: var(--shadow-soft), 0 0 0 2px rgba(245,208,111,0.10), inset 0 0 0 1px rgba(96,165,250,0.16);
     }
 
     .card h2 {
@@ -699,7 +721,7 @@
       background-clip: padding-box, border-box;
       color: var(--text);
       font-weight: 800;
-      box-shadow: none;
+      box-shadow: inset 0 0 0 1px rgba(34, 46, 70, 0.10);
     }
 
     .tab-btn.active {
@@ -708,7 +730,15 @@
         linear-gradient(135deg, var(--primary), rgba(212,175,55,0.92));
       color: #fff;
       border-color: rgba(255,255,255,0.14);
-      box-shadow: 0 14px 40px rgba(0,0,0,0.18), 0 0 0 4px rgba(212,175,55,0.12);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.18), 0 0 0 5px rgba(212,175,55,0.14);
+    }
+
+    body[data-theme="dark"] .tab-btn {
+      box-shadow: inset 0 0 0 1px rgba(245,208,111,0.18);
+    }
+
+    body[data-theme="dark"] .tab-btn.active {
+      box-shadow: 0 14px 40px rgba(0,0,0,0.35), 0 0 0 5px rgba(245,208,111,0.16);
     }
 
     .tab-panel {
