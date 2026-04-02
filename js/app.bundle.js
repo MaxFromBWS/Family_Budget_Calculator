@@ -2171,7 +2171,8 @@ function createEmptyAppData() {
         return;
       }
 
-      renderCalendarSelectedDayDetails();
+      // Нужно обновить выделение (класс .selected) в сетке календаря.
+      renderCalendar();
     }
 
     function renderCalendarSelectedDayDetails() {

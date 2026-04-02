@@ -1329,12 +1329,12 @@
       border: 1px solid var(--border);
       background: var(--card-bg);
       border-radius: 14px;
-      padding: 8px 7px;
+      padding: 6px 4px;
       min-height: 54px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       box-shadow: none;
       color: var(--text);
@@ -1370,13 +1370,14 @@
     }
 
     .calendar-day-num {
-      font-size: clamp(11px, 1.6vw, 13px);
-      font-weight: 950;
-      line-height: 1.05;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
+      font-family: var(--font-mono);
+      font-size: clamp(10px, 2.2vw, 12px);
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0;
+      width: 100%;
+      text-align: center;
     }
 
     .calendar-expense-pill {
